@@ -29,7 +29,8 @@ let balance = 0,
   income = 0,
   outcome = 0;
 const DELETE = "delete",
-  EDIT = "edit";
+  EDIT = "edit",
+  MAX_TITLE_LENGTH = 50;
 
 // LOOK IF THERE IS DATA IN LOCAL STORAGE
 ENTRY_LIST = JSON.parse(localStorage.getItem("entry_list")) || [];
@@ -56,35 +57,11 @@ allBtn.addEventListener("click", function () {
 });
 
 addExpense.addEventListener("click", function () {
-  // CHECK IF ONE OF THE INPUT IS EMPTY => EXIT
-  if (!expenseTitle.value || !expenseAmount.value) return;
-
-  // ADD INPUTs TO ENTRY_LIST
-  let expense = {
-    type: "expense",
-    title: expenseTitle.value,
-    amount: +expenseAmount.value,
-  };
-  ENTRY_LIST.push(expense);
-
-  updateUI();
-  clearInput([expenseTitle, expenseAmount]);
+  addEntry("expense", expenseTitle, expenseAmount);
 });
 
 addIncome.addEventListener("click", function () {
-  // CHECK IF ONE OF THE INPUT IS EMPTY => EXIT
-  if (!incomeTitle.value || !incomeAmount.value) return;
-
-  // ADD INPUTs TO ENTRY_LIST
-  let income = {
-    type: "income",
-    title: incomeTitle.value,
-    amount: +incomeAmount.value,
-  };
-  ENTRY_LIST.push(income);
-
-  updateUI();
-  clearInput([incomeTitle, incomeAmount]);
+  addEntry("income", incomeTitle, incomeAmount);
 });
 
 incomeList.addEventListener("click", deleteOrEdit);
@@ -92,6 +69,73 @@ expenseList.addEventListener("click", deleteOrEdit);
 allList.addEventListener("click", deleteOrEdit);
 
 // HELEPER FUNCS
+function addEntry(type, titleInput, amountInput) {
+  const validation = validateEntry(titleInput.value, amountInput.value);
+
+  if (!validation.isValid) {
+    showError(titleInput, validation.message);
+    return;
+  }
+
+  clearError(titleInput);
+
+  ENTRY_LIST.push({
+    type: type,
+    title: validation.title,
+    amount: validation.amount,
+  });
+
+  updateUI();
+  clearInput([titleInput, amountInput]);
+}
+
+function validateEntry(title, amount) {
+  // Validation prevents empty, unsafe, or invalid values from entering the app state.
+  const trimmedTitle = title.trim();
+  const parsedAmount = Number(amount);
+
+  if (!trimmedTitle) {
+    return { isValid: false, message: "Please enter a title." };
+  }
+
+  if (trimmedTitle.length > MAX_TITLE_LENGTH) {
+    return {
+      isValid: false,
+      message: `Title must be ${MAX_TITLE_LENGTH} characters or fewer.`,
+    };
+  }
+
+  if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+    return { isValid: false, message: "Please enter an amount greater than 0." };
+  }
+
+  return {
+    isValid: true,
+    title: trimmedTitle,
+    amount: parsedAmount,
+  };
+}
+
+function showError(input, message) {
+  let errorEl = input.parentNode.querySelector(".input-error");
+
+  if (!errorEl) {
+    errorEl = document.createElement("div");
+    errorEl.className = "input-error";
+    input.parentNode.appendChild(errorEl);
+  }
+
+  errorEl.textContent = message;
+}
+
+function clearError(input) {
+  const errorEl = input.parentNode.querySelector(".input-error");
+
+  if (errorEl) {
+    errorEl.remove();
+  }
+}
+
 function deleteOrEdit(event) {
   const targetBtn = event.target;
   const entry = targetBtn.parentNode;
@@ -114,9 +158,11 @@ function editEntry(entry) {
   if (ENTRY.type == "income") {
     incomeTitle.value = ENTRY.title;
     incomeAmount.value = ENTRY.amount;
+    clearError(incomeTitle);
   } else if (ENTRY.type == "expense") {
     expenseTitle.value = ENTRY.title;
     expenseAmount.value = ENTRY.amount;
+    clearError(expenseTitle);
   }
   deleteEntry(entry);
 }
@@ -148,13 +194,25 @@ function updateUI() {
 }
 
 function showEntry(list, type, title, amount, id) {
-  const entry = `<li id="${id}" class="${type}">
-                    <div class="entry">${title} : $${amount}</div>
-                    <div id="edit"></div>
-                    <div id="delete"></div>
-                  </li>`;
-  const position = "afterbegin";
-  list.insertAdjacentHTML(position, entry);
+  const entry = document.createElement("li");
+  entry.id = id;
+  entry.className = type;
+
+  const entryText = document.createElement("div");
+  entryText.className = "entry";
+  // textContent shows user input as plain text, preventing HTML/script execution.
+  entryText.textContent = `${title} : $${amount}`;
+
+  const editButton = document.createElement("div");
+  editButton.id = EDIT;
+
+  const deleteButton = document.createElement("div");
+  deleteButton.id = DELETE;
+
+  entry.appendChild(entryText);
+  entry.appendChild(editButton);
+  entry.appendChild(deleteButton);
+  list.prepend(entry);
 }
 
 function clearElement(elements) {
