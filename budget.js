@@ -1,4 +1,4 @@
-// SELECT ELEMENTS
+//SELECT ELEMENTS
 const balanceEl = document.querySelector(".balance .value");
 const incomeTotalEl = document.querySelector(".income-total");
 const outcomeTotalEl = document.querySelector(".outcome-total");
@@ -9,12 +9,12 @@ const incomeList = document.querySelector("#income .list");
 const expenseList = document.querySelector("#expense .list");
 const allList = document.querySelector("#all .list");
 
-// SELECT BUTTONS
+//SELECT BUTTONS
 const expenseBtn = document.querySelector(".first-tab");
 const incomeBtn = document.querySelector(".second-tab");
 const allBtn = document.querySelector(".third-tab");
 
-// INPUT BUTTONS
+//INPUT BTS
 const addExpense = document.querySelector(".add-expense");
 const expenseTitle = document.getElementById("expense-title-input");
 const expenseAmount = document.getElementById("expense-amount-input");
@@ -23,12 +23,11 @@ const addIncome = document.querySelector(".add-income");
 const incomeTitle = document.getElementById("income-title-input");
 const incomeAmount = document.getElementById("income-amount-input");
 
-// VARIABLES
+//VARIABLES
 let ENTRY_LIST;
 let balance = 0,
   income = 0,
   outcome = 0;
-
 const DELETE = "delete",
   EDIT = "edit",
   MAX_TITLE_LENGTH = 50;
@@ -37,21 +36,19 @@ const DELETE = "delete",
 ENTRY_LIST = JSON.parse(localStorage.getItem("entry_list")) || [];
 updateUI();
 
-// EVENT LISTENERS
+//EVENT LISTENERS
 expenseBtn.addEventListener("click", function () {
   show(expenseEl);
   hide([incomeEl, allEl]);
   active(expenseBtn);
   inactive([incomeBtn, allBtn]);
 });
-
 incomeBtn.addEventListener("click", function () {
   show(incomeEl);
   hide([expenseEl, allEl]);
   active(incomeBtn);
   inactive([expenseBtn, allBtn]);
 });
-
 allBtn.addEventListener("click", function () {
   show(allEl);
   hide([incomeEl, expenseEl]);
@@ -71,7 +68,7 @@ incomeList.addEventListener("click", deleteOrEdit);
 expenseList.addEventListener("click", deleteOrEdit);
 allList.addEventListener("click", deleteOrEdit);
 
-// HELPER FUNCTIONS
+// HELEPER FUNCS
 function addEntry(type, titleInput, amountInput) {
   const validation = validateEntry(titleInput.value, amountInput.value);
 
@@ -82,28 +79,23 @@ function addEntry(type, titleInput, amountInput) {
 
   clearError(titleInput);
 
-  const entry = {
+  ENTRY_LIST.push({
     type: type,
     title: validation.title,
     amount: validation.amount,
-  };
-
-  ENTRY_LIST.push(entry);
+  });
 
   updateUI();
   clearInput([titleInput, amountInput]);
 }
 
 function validateEntry(title, amount) {
-  // Validation prevents empty or invalid values from entering the app state.
+  // Validation prevents empty, unsafe, or invalid values from entering the app state.
   const trimmedTitle = title.trim();
   const parsedAmount = Number(amount);
 
   if (!trimmedTitle) {
-    return {
-      isValid: false,
-      message: "Please enter a title.",
-    };
+    return { isValid: false, message: "Please enter a title." };
   }
 
   if (trimmedTitle.length > MAX_TITLE_LENGTH) {
@@ -114,10 +106,7 @@ function validateEntry(title, amount) {
   }
 
   if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-    return {
-      isValid: false,
-      message: "Please enter an amount greater than 0.",
-    };
+    return { isValid: false, message: "Please enter an amount greater than 0." };
   }
 
   return {
@@ -175,7 +164,6 @@ function editEntry(entry) {
     expenseAmount.value = ENTRY.amount;
     clearError(expenseTitle);
   }
-
   deleteEntry(entry);
 }
 
@@ -186,7 +174,7 @@ function updateUI() {
 
   let sign = income >= outcome ? "$" : "-$";
 
-  // UPDATE UI
+  //UPDATE UI
   balanceEl.innerHTML = `<small>${sign}</small>${balance}`;
   outcomeTotalEl.innerHTML = `<small>$</small>${outcome}`;
   incomeTotalEl.innerHTML = `<small>$</small>${income}`;
@@ -199,23 +187,32 @@ function updateUI() {
     } else if (entry.type == "income") {
       showEntry(incomeList, entry.type, entry.title, entry.amount, index);
     }
-
     showEntry(allList, entry.type, entry.title, entry.amount, index);
   });
-
   updateChart(income, outcome);
   localStorage.setItem("entry_list", JSON.stringify(ENTRY_LIST));
 }
 
 function showEntry(list, type, title, amount, id) {
-  const entry = `<li id="${id}" class="${type}">
-                  <div class="entry">${title} : $${amount}</div>
-                  <div id="edit"></div>
-                  <div id="delete"></div>
-                </li>`;
+  const entry = document.createElement("li");
+  entry.id = id;
+  entry.className = type;
 
-  const position = "afterbegin";
-  list.insertAdjacentHTML(position, entry);
+  const entryText = document.createElement("div");
+  entryText.className = "entry";
+  // textContent shows user input as plain text, preventing HTML/script execution.
+  entryText.textContent = `${title} : $${amount}`;
+
+  const editButton = document.createElement("div");
+  editButton.id = EDIT;
+
+  const deleteButton = document.createElement("div");
+  deleteButton.id = DELETE;
+
+  entry.appendChild(entryText);
+  entry.appendChild(editButton);
+  entry.appendChild(deleteButton);
+  list.prepend(entry);
 }
 
 function clearElement(elements) {
@@ -226,20 +223,17 @@ function clearElement(elements) {
 
 function calculateTotal(type, list) {
   let sum = 0;
-
   list.forEach((entry) => {
     if (entry.type == type) {
       sum += entry.amount;
     }
   });
-
   return sum;
 }
 
 function calculateBalance(income, outcome) {
   return income - outcome;
 }
-
 function clearInput(inputs) {
   inputs.forEach((input) => {
     input.value = "";
@@ -259,7 +253,6 @@ function hide(elements) {
 function active(element) {
   element.classList.add("focus");
 }
-
 function inactive(elements) {
   elements.forEach((element) => {
     element.classList.remove("focus");
