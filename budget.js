@@ -1,5 +1,12 @@
+<<<<<<< HEAD
+﻿const CONFIG = {
+  storageKey: "entry_list",
+  consentKey: "cookie_consent",
+  localeKey: "budget_locale",
+=======
 const CONFIG = {
   storageKey: "entry_list",
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
   currencySymbol: "$",
   entryTypes: {
     income: "income",
@@ -29,6 +36,85 @@ const CONFIG = {
     expenseAmountInput: "expense-amount-input",
     incomeTitleInput: "income-title-input",
     incomeAmountInput: "income-amount-input",
+<<<<<<< HEAD
+    i18nToggle: ".lang-toggle",
+    cookieBanner: "#cookie-banner",
+    acceptCookies: "#accept-cookies",
+    declineCookies: "#decline-cookies",
+    privacyLink: "#privacy-link",
+  },
+};
+
+const I18N = {
+  en: {
+    lang: "en",
+    toggleLabel: "中文",
+    strings: {
+      balance: "Balance",
+      income: "Income",
+      outcome: "Outcome",
+      dashboard: "Dashboard",
+      expenses: "Expenses",
+      all: "All",
+      titleLabel: "Title",
+      amountLabel: "Amount",
+      expenseTitleAria: "Expense title",
+      expenseAmountAria: "Expense amount",
+      incomeTitleAria: "Income title",
+      incomeAmountAria: "Income amount",
+      addExpenseAria: "Add expense",
+      addIncomeAria: "Add income",
+      editEntryAria: "Edit entry",
+      deleteEntryAria: "Delete entry",
+      titlePlaceholder: "title",
+      amountPlaceholder: "$0",
+      cookieText: "We use local storage to save your entries. By continuing, you accept this use.",
+      accept: "Accept",
+      decline: "Decline",
+      privacyPolicy: "Privacy Policy",
+      privacyDesc: "This app stores your budget data in your browser local storage only. No data is sent to a server.",
+      close: "Close",
+      chartAria: "Income and expense chart",
+      titleRequired: "Please enter a title.",
+      titleTooLong: (max) => `Title must be ${max} characters or fewer.`,
+      invalidAmount: "Please enter an amount greater than 0.",
+    },
+  },
+  zh: {
+    lang: "zh",
+    toggleLabel: "EN",
+    strings: {
+      balance: "结余",
+      income: "收入",
+      outcome: "支出",
+      dashboard: "面板",
+      expenses: "支出",
+      all: "全部",
+      titleLabel: "标题",
+      amountLabel: "金额",
+      expenseTitleAria: "支出标题",
+      expenseAmountAria: "支出金额",
+      incomeTitleAria: "收入标题",
+      incomeAmountAria: "收入金额",
+      addExpenseAria: "添加支出",
+      addIncomeAria: "添加收入",
+      editEntryAria: "编辑条目",
+      deleteEntryAria: "删除条目",
+      titlePlaceholder: "标题",
+      amountPlaceholder: "$0",
+      cookieText: "我们使用本地存储保存账目数据。继续使用即表示你同意。",
+      accept: "同意",
+      decline: "拒绝",
+      privacyPolicy: "隐私政策",
+      privacyDesc: "本应用仅在浏览器本地存储你的账目数据，不会发送到服务器。",
+      close: "关闭",
+      chartAria: "收入与支出图表",
+      titleRequired: "请输入标题。",
+      titleTooLong: (max) => `标题最多 ${max} 个字符。`,
+      invalidAmount: "请输入大于 0 的金额。",
+    },
+  },
+=======
   },
 };
 
@@ -36,6 +122,7 @@ const VALIDATION_MESSAGES = {
   titleRequired: "Please enter a title.",
   titleTooLong: (max) => `Title must be ${max} characters or fewer.`,
   invalidAmount: "Please enter an amount greater than 0.",
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
 };
 
 const balanceEl = document.querySelector(CONFIG.selectors.balanceValue);
@@ -59,11 +146,28 @@ const addIncome = document.querySelector(CONFIG.selectors.addIncome);
 const incomeTitle = document.getElementById(CONFIG.selectors.incomeTitleInput);
 const incomeAmount = document.getElementById(CONFIG.selectors.incomeAmountInput);
 
+<<<<<<< HEAD
+const i18nToggle = document.querySelector(CONFIG.selectors.i18nToggle);
+const cookieBanner = document.querySelector(CONFIG.selectors.cookieBanner);
+const acceptCookiesBtn = document.querySelector(CONFIG.selectors.acceptCookies);
+const declineCookiesBtn = document.querySelector(CONFIG.selectors.declineCookies);
+const privacyLink = document.querySelector(CONFIG.selectors.privacyLink);
+
+let currentLocale = loadLocale();
+let consentState = localStorage.getItem(CONFIG.consentKey);
+let ENTRY_LIST = consentState === "accepted" ? loadEntries() : [];
+=======
 let ENTRY_LIST = loadEntries();
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
 let balance = 0;
 let income = 0;
 let outcome = 0;
 
+<<<<<<< HEAD
+applyLocale();
+initConsentBanner();
+=======
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
 setActiveTab("all");
 updateUI();
 
@@ -98,6 +202,95 @@ incomeList.addEventListener("click", deleteOrEdit);
 expenseList.addEventListener("click", deleteOrEdit);
 allList.addEventListener("click", deleteOrEdit);
 
+<<<<<<< HEAD
+i18nToggle.addEventListener("click", toggleLocale);
+acceptCookiesBtn.addEventListener("click", acceptCookies);
+declineCookiesBtn.addEventListener("click", declineCookies);
+
+function getI18nStrings() {
+  return I18N[currentLocale].strings;
+}
+
+function getValidationMessages() {
+  const t = getI18nStrings();
+  return {
+    titleRequired: t.titleRequired,
+    titleTooLong: t.titleTooLong,
+    invalidAmount: t.invalidAmount,
+  };
+}
+
+function loadLocale() {
+  const storedLocale = localStorage.getItem(CONFIG.localeKey);
+  return storedLocale && I18N[storedLocale] ? storedLocale : "en";
+}
+
+function toggleLocale() {
+  currentLocale = currentLocale === "en" ? "zh" : "en";
+  localStorage.setItem(CONFIG.localeKey, currentLocale);
+  applyLocale();
+  updateUI();
+}
+
+function applyLocale() {
+  const strings = getI18nStrings();
+
+  document.documentElement.lang = I18N[currentLocale].lang;
+  i18nToggle.textContent = I18N[currentLocale].toggleLabel;
+
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    const key = element.dataset.i18n;
+    const value = strings[key];
+
+    if (typeof value === "string") {
+      element.textContent = value;
+    }
+  });
+
+  expenseTitle.placeholder = strings.titlePlaceholder;
+  incomeTitle.placeholder = strings.titlePlaceholder;
+  expenseAmount.placeholder = strings.amountPlaceholder;
+  incomeAmount.placeholder = strings.amountPlaceholder;
+
+  expenseTitle.setAttribute("aria-label", strings.expenseTitleAria);
+  expenseAmount.setAttribute("aria-label", strings.expenseAmountAria);
+  incomeTitle.setAttribute("aria-label", strings.incomeTitleAria);
+  incomeAmount.setAttribute("aria-label", strings.incomeAmountAria);
+  addExpense.setAttribute("aria-label", strings.addExpenseAria);
+  addIncome.setAttribute("aria-label", strings.addIncomeAria);
+
+  const chart = document.querySelector(".chart");
+  chart.setAttribute("aria-label", strings.chartAria);
+}
+
+function initConsentBanner() {
+  if (consentState === "accepted" || consentState === "declined") {
+    hide(cookieBanner);
+    return;
+  }
+
+  show(cookieBanner);
+}
+
+function acceptCookies() {
+  consentState = "accepted";
+  localStorage.setItem(CONFIG.consentKey, consentState);
+  ENTRY_LIST = loadEntries();
+  hide(cookieBanner);
+  updateUI();
+}
+
+function declineCookies() {
+  consentState = "declined";
+  localStorage.setItem(CONFIG.consentKey, consentState);
+  localStorage.removeItem(CONFIG.storageKey);
+  ENTRY_LIST = [];
+  hide(cookieBanner);
+  updateUI();
+}
+
+=======
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
 function setActiveTab(tab) {
   const tabMap = {
     expense: { panel: expenseEl, button: expenseBtn },
@@ -135,7 +328,11 @@ function handleTabKeyNavigation(event) {
 function addEntry(type, titleInput, amountInput) {
   const validation = BudgetCore.validateEntry(titleInput.value, amountInput.value, {
     config: CONFIG,
+<<<<<<< HEAD
+    messages: getValidationMessages(),
+=======
     messages: VALIDATION_MESSAGES,
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
   });
 
   if (!validation.isValid) {
@@ -145,7 +342,10 @@ function addEntry(type, titleInput, amountInput) {
 
   clearError(titleInput);
 
+<<<<<<< HEAD
+=======
   // Stable IDs decouple stored data from the DOM order, which makes editing/deleting safer.
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
   ENTRY_LIST.push({
     id: BudgetCore.defaultGenerateEntryId(),
     type,
@@ -224,10 +424,20 @@ function updateUI() {
     window.updateChart(income, outcome);
   }
 
+<<<<<<< HEAD
+  if (consentState === "accepted") {
+    saveEntries(ENTRY_LIST);
+  }
+}
+
+function showEntry(list, entry) {
+  const strings = getI18nStrings();
+=======
   saveEntries(ENTRY_LIST);
 }
 
 function showEntry(list, entry) {
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
   const listItem = document.createElement("li");
   listItem.className = entry.type;
   listItem.dataset.entryId = entry.id;
@@ -239,12 +449,20 @@ function showEntry(list, entry) {
   const editButton = document.createElement("button");
   editButton.type = "button";
   editButton.dataset.action = CONFIG.actions.edit;
+<<<<<<< HEAD
+  editButton.setAttribute("aria-label", strings.editEntryAria);
+=======
   editButton.setAttribute("aria-label", "Edit entry");
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
 
   const deleteButton = document.createElement("button");
   deleteButton.type = "button";
   deleteButton.dataset.action = CONFIG.actions.delete;
+<<<<<<< HEAD
+  deleteButton.setAttribute("aria-label", strings.deleteEntryAria);
+=======
   deleteButton.setAttribute("aria-label", "Delete entry");
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
 
   listItem.appendChild(entryText);
   listItem.appendChild(editButton);
@@ -258,7 +476,11 @@ function loadEntries() {
     storageKey: CONFIG.storageKey,
     config: CONFIG,
     createId: BudgetCore.defaultGenerateEntryId,
+<<<<<<< HEAD
+    messages: getValidationMessages(),
+=======
     messages: VALIDATION_MESSAGES,
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
     onError: (error) => {
       console.warn("Budget App could not load saved entries.", error);
     },
@@ -266,6 +488,13 @@ function loadEntries() {
 }
 
 function saveEntries(entries) {
+<<<<<<< HEAD
+  try {
+    localStorage.setItem(CONFIG.storageKey, JSON.stringify(entries));
+  } catch (error) {
+    console.warn("Budget App could not save entries to localStorage.", error);
+  }
+=======
   BudgetCore.saveEntries({
     entries,
     storage: localStorage,
@@ -274,6 +503,7 @@ function saveEntries(entries) {
       console.warn("Budget App could not save entries to localStorage.", error);
     },
   });
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
 }
 
 function showError(input, message) {

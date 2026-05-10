@@ -40,4 +40,8 @@ function updateChart(income, outcome) {
 
   drawCircle("#FFF", -ratio, true);
   drawCircle("#F0624D", 1 - ratio, false);
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284

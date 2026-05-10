@@ -117,6 +117,8 @@
     }
   }
 
+<<<<<<< HEAD
+=======
   function saveEntries(options) {
     const entries = options?.entries || [];
     const storage = options?.storage || global.localStorage;
@@ -132,6 +134,7 @@
     }
   }
 
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
   function calculateTotal(type, list) {
     return list.reduce((sum, entry) => {
       if (entry.type === type) {
@@ -151,7 +154,10 @@
     validateEntry,
     normalizeStoredEntry,
     loadEntries,
+<<<<<<< HEAD
+=======
     saveEntries,
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
     calculateTotal,
     calculateBalance,
     defaultGenerateEntryId,

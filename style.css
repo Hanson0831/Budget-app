@@ -69,6 +69,23 @@ input[type="number"] {
   font-family: "Gilroy Bold";
 }
 
+<<<<<<< HEAD
+.top-actions {
+  margin: 10px 20px 0 20px;
+  text-align: right;
+}
+
+.lang-toggle {
+  border: 1px solid #fff;
+  border-radius: 999px;
+  background: transparent;
+  color: #fff;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+=======
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
 .budget-header {
 }
 
@@ -509,3 +526,37 @@ input:focus-visible {
   outline: 2px solid #4f8cff;
   outline-offset: 2px;
 }
+<<<<<<< HEAD
+
+.cookie-banner {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  background: #fff;
+  color: #1a0034;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+.cookie-banner p {
+  margin: 0 0 10px 0;
+  user-select: text;
+}
+
+.cookie-actions button,
+.cookie-actions a {
+  border: 1px solid #1a0034;
+  background: #fff;
+  color: #1a0034;
+  border-radius: 8px;
+  margin-right: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: inline-block;
+}
+=======
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
