@@ -117,6 +117,24 @@
     }
   }
 
+<<<<<<< HEAD
+=======
+  function saveEntries(options) {
+    const entries = options?.entries || [];
+    const storage = options?.storage || global.localStorage;
+    const storageKey = options?.storageKey || DEFAULT_CONFIG.storageKey;
+    const onError = options?.onError || function () {};
+
+    try {
+      storage.setItem(storageKey, JSON.stringify(entries));
+      return true;
+    } catch (error) {
+      onError(error);
+      return false;
+    }
+  }
+
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
   function calculateTotal(type, list) {
     return list.reduce((sum, entry) => {
       if (entry.type === type) {
@@ -136,6 +154,10 @@
     validateEntry,
     normalizeStoredEntry,
     loadEntries,
+<<<<<<< HEAD
+=======
+    saveEntries,
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
     calculateTotal,
     calculateBalance,
     defaultGenerateEntryId,

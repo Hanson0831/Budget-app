@@ -6,10 +6,14 @@
   "scripts": {
     "test": "node tests/budget-core.test.js",
     "test:watch": "node --watch tests/budget-core.test.js",
+<<<<<<< HEAD
     "coverage": "npm run coverage:raw && npm run coverage:parse",
     "lighthouse": "echo Run Lighthouse manually in Chrome DevTools on index.html and ensure Accessibility >= 90",
     "coverage:raw": "node --experimental-test-coverage tests/budget-core.test.js > coverage/coverage.txt",
     "coverage:parse": "node scripts/parse-coverage.js"
+=======
+    "coverage": "node --experimental-test-coverage tests/budget-core.test.js"
+>>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
   },
   "keywords": [],
   "author": "",
