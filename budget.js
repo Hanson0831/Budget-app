@@ -145,6 +145,7 @@ function addEntry(type, titleInput, amountInput) {
 
   clearError(titleInput);
 
+  // Stable IDs decouple stored data from the DOM order, which makes editing/deleting safer.
   ENTRY_LIST.push({
     id: BudgetCore.defaultGenerateEntryId(),
     type,
