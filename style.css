@@ -14,6 +14,7 @@
 body {
   background-color: #222;
   font-family: "Gilroy";
+  margin: 0;
 }
 
 * {
@@ -58,6 +59,13 @@ input[type="number"] {
   color: #fff;
 }
 .budget-container .app-title a b {
+  font-family: "Gilroy Bold";
+}
+
+.budget-container .app-title span {
+  color: #fff;
+}
+.budget-container .app-title span b {
   font-family: "Gilroy Bold";
 }
 
@@ -143,18 +151,21 @@ input[type="number"] {
 }
 
 .toggle .first-tab,
-.second-tab,
-.third-tab {
+.toggle .second-tab,
+.toggle .third-tab {
   display: inline-block;
   cursor: pointer;
   font-size: 1.1em;
   color: #1a0034;
   font-family: "Gilroy Bold";
   opacity: 0.4;
+  border: none;
+  background: transparent;
+  padding: 0;
 }
 
 .toggle .second-tab,
-.third-tab {
+.toggle .third-tab {
   margin-left: 10px;
 }
 
@@ -278,6 +289,12 @@ input[type="number"] {
 .budget-dashboard #expense .input .add-expense img {
   width: 40px;
   height: 40px;
+}
+
+.budget-dashboard #expense .input .add-expense {
+  border: none;
+  background: transparent;
+  padding: 0;
   cursor: pointer;
 }
 
@@ -321,6 +338,9 @@ input[type="number"] {
   background-image: url("icon/edit.png");
   background-size: 20px 20px;
   background-repeat: no-repeat;
+  border: none;
+  background-color: transparent;
+  padding: 0;
 }
 
 .budget-dashboard #expense ul.list li [data-action="delete"] {
@@ -332,6 +352,9 @@ input[type="number"] {
   background-image: url("icon/trash.png");
   background-size: 20px 20px;
   background-repeat: no-repeat;
+  border: none;
+  background-color: transparent;
+  padding: 0;
 }
 
 /* /////// INCOME //////// */
@@ -381,6 +404,12 @@ input[type="number"] {
 .budget-dashboard #income .input .add-income img {
   width: 40px;
   height: 40px;
+}
+
+.budget-dashboard #income .input .add-income {
+  border: none;
+  background: transparent;
+  padding: 0;
   cursor: pointer;
 }
 
@@ -423,6 +452,9 @@ input[type="number"] {
   background-image: url("icon/edit.png");
   background-size: 20px 20px;
   background-repeat: no-repeat;
+  border: none;
+  background-color: transparent;
+  padding: 0;
 }
 
 .budget-dashboard #income ul.list li [data-action="delete"] {
@@ -434,6 +466,9 @@ input[type="number"] {
   background-image: url("icon/trash.png");
   background-size: 20px 20px;
   background-repeat: no-repeat;
+  border: none;
+  background-color: transparent;
+  padding: 0;
 }
 
 .budget-dashboard .input-error {
@@ -443,4 +478,34 @@ input[type="number"] {
   color: #f0624d;
   font-size: 0.85em;
   font-family: "Gilroy Bold";
+}
+
+.budget-dashboard #all ul.list li [data-action="delete"] {
+  border: none;
+  background-color: transparent;
+  padding: 0;
+}
+
+.budget-dashboard #all ul.list li [data-action="edit"] {
+  border: none;
+  background-color: transparent;
+  padding: 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #4f8cff;
+  outline-offset: 2px;
 }

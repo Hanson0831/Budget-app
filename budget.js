@@ -1,4 +1,3 @@
-// Centralizing constants keeps configuration easy to change and avoids repeated strings.
 const CONFIG = {
   storageKey: "entry_list",
   currencySymbol: "$",
@@ -33,7 +32,12 @@ const CONFIG = {
   },
 };
 
-// SELECT ELEMENTS
+const VALIDATION_MESSAGES = {
+  titleRequired: "Please enter a title.",
+  titleTooLong: (max) => `Title must be ${max} characters or fewer.`,
+  invalidAmount: "Please enter an amount greater than 0.",
+};
+
 const balanceEl = document.querySelector(CONFIG.selectors.balanceValue);
 const incomeTotalEl = document.querySelector(CONFIG.selectors.incomeTotal);
 const outcomeTotalEl = document.querySelector(CONFIG.selectors.outcomeTotal);
@@ -44,46 +48,30 @@ const incomeList = document.querySelector(`${CONFIG.selectors.incomeSection} ${C
 const expenseList = document.querySelector(`${CONFIG.selectors.expenseSection} ${CONFIG.selectors.list}`);
 const allList = document.querySelector(`${CONFIG.selectors.allSection} ${CONFIG.selectors.list}`);
 
-// SELECT BUTTONS
 const expenseBtn = document.querySelector(CONFIG.selectors.expenseTab);
 const incomeBtn = document.querySelector(CONFIG.selectors.incomeTab);
 const allBtn = document.querySelector(CONFIG.selectors.allTab);
 
-// INPUT BUTTONS
 const addExpense = document.querySelector(CONFIG.selectors.addExpense);
 const expenseTitle = document.getElementById(CONFIG.selectors.expenseTitleInput);
 const expenseAmount = document.getElementById(CONFIG.selectors.expenseAmountInput);
-
 const addIncome = document.querySelector(CONFIG.selectors.addIncome);
 const incomeTitle = document.getElementById(CONFIG.selectors.incomeTitleInput);
 const incomeAmount = document.getElementById(CONFIG.selectors.incomeAmountInput);
 
-// VARIABLES
 let ENTRY_LIST = loadEntries();
-let balance = 0,
-  income = 0,
-  outcome = 0;
+let balance = 0;
+let income = 0;
+let outcome = 0;
 
+setActiveTab("all");
 updateUI();
 
-// EVENT LISTENERS
-expenseBtn.addEventListener("click", function () {
-  show(expenseEl);
-  hide([incomeEl, allEl]);
-  active(expenseBtn);
-  inactive([incomeBtn, allBtn]);
-});
-incomeBtn.addEventListener("click", function () {
-  show(incomeEl);
-  hide([expenseEl, allEl]);
-  active(incomeBtn);
-  inactive([expenseBtn, allBtn]);
-});
-allBtn.addEventListener("click", function () {
-  show(allEl);
-  hide([incomeEl, expenseEl]);
-  active(allBtn);
-  inactive([incomeBtn, expenseBtn]);
+expenseBtn.addEventListener("click", () => setActiveTab("expense"));
+incomeBtn.addEventListener("click", () => setActiveTab("income"));
+allBtn.addEventListener("click", () => setActiveTab("all"));
+[expenseBtn, incomeBtn, allBtn].forEach((button) => {
+  button.addEventListener("keydown", handleTabKeyNavigation);
 });
 
 addExpense.addEventListener("click", function () {
@@ -94,13 +82,61 @@ addIncome.addEventListener("click", function () {
   addEntry(CONFIG.entryTypes.income, incomeTitle, incomeAmount);
 });
 
+expenseAmount.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    addEntry(CONFIG.entryTypes.expense, expenseTitle, expenseAmount);
+  }
+});
+
+incomeAmount.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    addEntry(CONFIG.entryTypes.income, incomeTitle, incomeAmount);
+  }
+});
+
 incomeList.addEventListener("click", deleteOrEdit);
 expenseList.addEventListener("click", deleteOrEdit);
 allList.addEventListener("click", deleteOrEdit);
 
-// HELPER FUNCTIONS
+function setActiveTab(tab) {
+  const tabMap = {
+    expense: { panel: expenseEl, button: expenseBtn },
+    income: { panel: incomeEl, button: incomeBtn },
+    all: { panel: allEl, button: allBtn },
+  };
+
+  Object.values(tabMap).forEach(({ panel, button }) => {
+    hide(panel);
+    inactive(button);
+    panel.setAttribute("aria-hidden", "true");
+    button.setAttribute("aria-selected", "false");
+  });
+
+  show(tabMap[tab].panel);
+  active(tabMap[tab].button);
+  tabMap[tab].panel.setAttribute("aria-hidden", "false");
+  tabMap[tab].button.setAttribute("aria-selected", "true");
+}
+
+function handleTabKeyNavigation(event) {
+  const tabs = [expenseBtn, incomeBtn, allBtn];
+  const currentIndex = tabs.indexOf(event.currentTarget);
+  if (currentIndex === -1) return;
+
+  if (event.key === "ArrowRight") {
+    event.preventDefault();
+    tabs[(currentIndex + 1) % tabs.length].focus();
+  } else if (event.key === "ArrowLeft") {
+    event.preventDefault();
+    tabs[(currentIndex - 1 + tabs.length) % tabs.length].focus();
+  }
+}
+
 function addEntry(type, titleInput, amountInput) {
-  const validation = validateEntry(titleInput.value, amountInput.value);
+  const validation = BudgetCore.validateEntry(titleInput.value, amountInput.value, {
+    config: CONFIG,
+    messages: VALIDATION_MESSAGES,
+  });
 
   if (!validation.isValid) {
     showError(titleInput, validation.message);
@@ -111,7 +147,7 @@ function addEntry(type, titleInput, amountInput) {
 
   // Stable IDs decouple stored data from the DOM order, which makes editing/deleting safer.
   ENTRY_LIST.push({
-    id: generateEntryId(),
+    id: BudgetCore.defaultGenerateEntryId(),
     type,
     title: validation.entry.title,
     amount: validation.entry.amount,
@@ -121,52 +157,18 @@ function addEntry(type, titleInput, amountInput) {
   clearInput([titleInput, amountInput]);
 }
 
-function validateEntry(title, amount) {
-  const trimmedTitle = title.trim();
-  const parsedAmount = Number(amount);
-
-  if (!trimmedTitle) {
-    return { isValid: false, message: "Please enter a title." };
-  }
-
-  if (trimmedTitle.length > CONFIG.validation.maxTitleLength) {
-    return {
-      isValid: false,
-      message: `Title must be ${CONFIG.validation.maxTitleLength} characters or fewer.`,
-    };
-  }
-
-  if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-    return { isValid: false, message: "Please enter an amount greater than 0." };
-  }
-
-  return {
-    isValid: true,
-    entry: {
-      title: trimmedTitle,
-      amount: parsedAmount,
-    },
-  };
-}
-
-function generateEntryId() {
-  if (window.crypto && typeof window.crypto.randomUUID === "function") {
-    return window.crypto.randomUUID();
-  }
-
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
 function deleteOrEdit(event) {
-  const targetBtn = event.target;
+  const targetBtn = event.target.closest("[data-action]");
+  if (!targetBtn) return;
+
   const action = targetBtn.dataset.action;
   const entry = targetBtn.closest("[data-entry-id]");
 
   if (!entry || !action) return;
 
-  if (action == CONFIG.actions.edit) {
+  if (action === CONFIG.actions.edit) {
     editEntry(entry.dataset.entryId);
-  } else if (action == CONFIG.actions.delete) {
+  } else if (action === CONFIG.actions.delete) {
     deleteEntry(entry.dataset.entryId);
   }
 }
@@ -181,27 +183,28 @@ function editEntry(entryId) {
 
   if (!entry) return;
 
-  if (entry.type == CONFIG.entryTypes.income) {
+  if (entry.type === CONFIG.entryTypes.income) {
     incomeTitle.value = entry.title;
     incomeAmount.value = entry.amount;
     clearError(incomeTitle);
-  } else if (entry.type == CONFIG.entryTypes.expense) {
+    setActiveTab("income");
+  } else if (entry.type === CONFIG.entryTypes.expense) {
     expenseTitle.value = entry.title;
     expenseAmount.value = entry.amount;
     clearError(expenseTitle);
+    setActiveTab("expense");
   }
 
   deleteEntry(entryId);
 }
 
 function updateUI() {
-  income = calculateTotal(CONFIG.entryTypes.income, ENTRY_LIST);
-  outcome = calculateTotal(CONFIG.entryTypes.expense, ENTRY_LIST);
-  balance = Math.abs(calculateBalance(income, outcome));
+  income = BudgetCore.calculateTotal(CONFIG.entryTypes.income, ENTRY_LIST);
+  outcome = BudgetCore.calculateTotal(CONFIG.entryTypes.expense, ENTRY_LIST);
+  balance = Math.abs(BudgetCore.calculateBalance(income, outcome));
 
-  let sign = income >= outcome ? CONFIG.currencySymbol : `-${CONFIG.currencySymbol}`;
+  const sign = income >= outcome ? CONFIG.currencySymbol : `-${CONFIG.currencySymbol}`;
 
-  // These summary values are app-generated, not user input.
   balanceEl.innerHTML = `<small>${sign}</small>${balance}`;
   outcomeTotalEl.innerHTML = `<small>${CONFIG.currencySymbol}</small>${outcome}`;
   incomeTotalEl.innerHTML = `<small>${CONFIG.currencySymbol}</small>${income}`;
@@ -209,14 +212,18 @@ function updateUI() {
   clearElement([expenseList, incomeList, allList]);
 
   ENTRY_LIST.forEach((entry) => {
-    if (entry.type == CONFIG.entryTypes.expense) {
+    if (entry.type === CONFIG.entryTypes.expense) {
       showEntry(expenseList, entry);
-    } else if (entry.type == CONFIG.entryTypes.income) {
+    } else if (entry.type === CONFIG.entryTypes.income) {
       showEntry(incomeList, entry);
     }
     showEntry(allList, entry);
   });
-  updateChart(income, outcome);
+
+  if (typeof window.updateChart === "function") {
+    window.updateChart(income, outcome);
+  }
+
   saveEntries(ENTRY_LIST);
 }
 
@@ -227,14 +234,17 @@ function showEntry(list, entry) {
 
   const entryText = document.createElement("div");
   entryText.className = "entry";
-  // textContent prevents user input from being interpreted as executable HTML.
   entryText.textContent = `${entry.title} : ${CONFIG.currencySymbol}${entry.amount}`;
 
-  const editButton = document.createElement("div");
+  const editButton = document.createElement("button");
+  editButton.type = "button";
   editButton.dataset.action = CONFIG.actions.edit;
+  editButton.setAttribute("aria-label", "Edit entry");
 
-  const deleteButton = document.createElement("div");
+  const deleteButton = document.createElement("button");
+  deleteButton.type = "button";
   deleteButton.dataset.action = CONFIG.actions.delete;
+  deleteButton.setAttribute("aria-label", "Delete entry");
 
   listItem.appendChild(entryText);
   listItem.appendChild(editButton);
@@ -243,52 +253,27 @@ function showEntry(list, entry) {
 }
 
 function loadEntries() {
-  try {
-    // localStorage is the persistence layer for this static app, so corrupted data needs recovery.
-    const storedEntries = localStorage.getItem(CONFIG.storageKey);
-
-    if (!storedEntries) return [];
-
-    const parsedEntries = JSON.parse(storedEntries);
-
-    if (!Array.isArray(parsedEntries)) {
-      throw new Error("Stored entries are not an array.");
-    }
-
-    return parsedEntries.map(normalizeStoredEntry).filter(Boolean);
-  } catch (error) {
-    console.warn("Budget App could not load saved entries. Starting with an empty list.", error);
-    try {
-      localStorage.removeItem(CONFIG.storageKey);
-    } catch (removeError) {
-      console.warn("Budget App could not remove invalid localStorage data.", removeError);
-    }
-    return [];
-  }
-}
-
-function normalizeStoredEntry(entry) {
-  if (!entry || typeof entry !== "object") return null;
-  if (!Object.values(CONFIG.entryTypes).includes(entry.type)) return null;
-
-  const validation = validateEntry(String(entry.title || ""), entry.amount);
-  if (!validation.isValid) return null;
-
-  return {
-    // Older localStorage data did not have IDs, so it is migrated during loading.
-    id: typeof entry.id === "string" && entry.id ? entry.id : generateEntryId(),
-    type: entry.type,
-    title: validation.entry.title,
-    amount: validation.entry.amount,
-  };
+  return BudgetCore.loadEntries({
+    storage: localStorage,
+    storageKey: CONFIG.storageKey,
+    config: CONFIG,
+    createId: BudgetCore.defaultGenerateEntryId,
+    messages: VALIDATION_MESSAGES,
+    onError: (error) => {
+      console.warn("Budget App could not load saved entries.", error);
+    },
+  });
 }
 
 function saveEntries(entries) {
-  try {
-    localStorage.setItem(CONFIG.storageKey, JSON.stringify(entries));
-  } catch (error) {
-    console.warn("Budget App could not save entries to localStorage.", error);
-  }
+  BudgetCore.saveEntries({
+    entries,
+    storage: localStorage,
+    storageKey: CONFIG.storageKey,
+    onError: (error) => {
+      console.warn("Budget App could not save entries to localStorage.", error);
+    },
+  });
 }
 
 function showError(input, message) {
@@ -317,20 +302,6 @@ function clearElement(elements) {
   });
 }
 
-function calculateTotal(type, list) {
-  return list.reduce((sum, entry) => {
-    if (entry.type == type) {
-      return sum + entry.amount;
-    }
-
-    return sum;
-  }, 0);
-}
-
-function calculateBalance(income, outcome) {
-  return income - outcome;
-}
-
 function clearInput(inputs) {
   inputs.forEach((input) => {
     input.value = "";
@@ -341,17 +312,14 @@ function show(element) {
   element.classList.remove("hide");
 }
 
-function hide(elements) {
-  elements.forEach((element) => {
-    element.classList.add("hide");
-  });
+function hide(element) {
+  element.classList.add("hide");
 }
 
 function active(element) {
   element.classList.add("focus");
 }
-function inactive(elements) {
-  elements.forEach((element) => {
-    element.classList.remove("focus");
-  });
+
+function inactive(element) {
+  element.classList.remove("focus");
 }
