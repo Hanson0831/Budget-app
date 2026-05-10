@@ -1,76 +1,142 @@
-//SELECT ELEMENTS
-const balanceEl = document.querySelector(".balance .value");
-const incomeTotalEl = document.querySelector(".income-total");
-const outcomeTotalEl = document.querySelector(".outcome-total");
-const incomeEl = document.querySelector("#income");
-const expenseEl = document.querySelector("#expense");
-const allEl = document.querySelector("#all");
-const incomeList = document.querySelector("#income .list");
-const expenseList = document.querySelector("#expense .list");
-const allList = document.querySelector("#all .list");
+const CONFIG = {
+  storageKey: "entry_list",
+  currencySymbol: "$",
+  entryTypes: {
+    income: "income",
+    expense: "expense",
+  },
+  actions: {
+    edit: "edit",
+    delete: "delete",
+  },
+  validation: {
+    maxTitleLength: 50,
+  },
+  selectors: {
+    balanceValue: ".balance .value",
+    incomeTotal: ".income-total",
+    outcomeTotal: ".outcome-total",
+    incomeSection: "#income",
+    expenseSection: "#expense",
+    allSection: "#all",
+    list: ".list",
+    expenseTab: ".first-tab",
+    incomeTab: ".second-tab",
+    allTab: ".third-tab",
+    addExpense: ".add-expense",
+    addIncome: ".add-income",
+    expenseTitleInput: "expense-title-input",
+    expenseAmountInput: "expense-amount-input",
+    incomeTitleInput: "income-title-input",
+    incomeAmountInput: "income-amount-input",
+  },
+};
 
-//SELECT BUTTONS
-const expenseBtn = document.querySelector(".first-tab");
-const incomeBtn = document.querySelector(".second-tab");
-const allBtn = document.querySelector(".third-tab");
+const VALIDATION_MESSAGES = {
+  titleRequired: "Please enter a title.",
+  titleTooLong: (max) => `Title must be ${max} characters or fewer.`,
+  invalidAmount: "Please enter an amount greater than 0.",
+};
 
-//INPUT BTS
-const addExpense = document.querySelector(".add-expense");
-const expenseTitle = document.getElementById("expense-title-input");
-const expenseAmount = document.getElementById("expense-amount-input");
+const balanceEl = document.querySelector(CONFIG.selectors.balanceValue);
+const incomeTotalEl = document.querySelector(CONFIG.selectors.incomeTotal);
+const outcomeTotalEl = document.querySelector(CONFIG.selectors.outcomeTotal);
+const incomeEl = document.querySelector(CONFIG.selectors.incomeSection);
+const expenseEl = document.querySelector(CONFIG.selectors.expenseSection);
+const allEl = document.querySelector(CONFIG.selectors.allSection);
+const incomeList = document.querySelector(`${CONFIG.selectors.incomeSection} ${CONFIG.selectors.list}`);
+const expenseList = document.querySelector(`${CONFIG.selectors.expenseSection} ${CONFIG.selectors.list}`);
+const allList = document.querySelector(`${CONFIG.selectors.allSection} ${CONFIG.selectors.list}`);
 
-const addIncome = document.querySelector(".add-income");
-const incomeTitle = document.getElementById("income-title-input");
-const incomeAmount = document.getElementById("income-amount-input");
+const expenseBtn = document.querySelector(CONFIG.selectors.expenseTab);
+const incomeBtn = document.querySelector(CONFIG.selectors.incomeTab);
+const allBtn = document.querySelector(CONFIG.selectors.allTab);
 
-//VARIABLES
-let ENTRY_LIST;
-let balance = 0,
-  income = 0,
-  outcome = 0;
-const DELETE = "delete",
-  EDIT = "edit",
-  MAX_TITLE_LENGTH = 50;
+const addExpense = document.querySelector(CONFIG.selectors.addExpense);
+const expenseTitle = document.getElementById(CONFIG.selectors.expenseTitleInput);
+const expenseAmount = document.getElementById(CONFIG.selectors.expenseAmountInput);
+const addIncome = document.querySelector(CONFIG.selectors.addIncome);
+const incomeTitle = document.getElementById(CONFIG.selectors.incomeTitleInput);
+const incomeAmount = document.getElementById(CONFIG.selectors.incomeAmountInput);
 
-// LOOK IF THERE IS DATA IN LOCAL STORAGE
-ENTRY_LIST = JSON.parse(localStorage.getItem("entry_list")) || [];
+let ENTRY_LIST = loadEntries();
+let balance = 0;
+let income = 0;
+let outcome = 0;
+
+setActiveTab("all");
 updateUI();
 
-//EVENT LISTENERS
-expenseBtn.addEventListener("click", function () {
-  show(expenseEl);
-  hide([incomeEl, allEl]);
-  active(expenseBtn);
-  inactive([incomeBtn, allBtn]);
-});
-incomeBtn.addEventListener("click", function () {
-  show(incomeEl);
-  hide([expenseEl, allEl]);
-  active(incomeBtn);
-  inactive([expenseBtn, allBtn]);
-});
-allBtn.addEventListener("click", function () {
-  show(allEl);
-  hide([incomeEl, expenseEl]);
-  active(allBtn);
-  inactive([incomeBtn, expenseBtn]);
+expenseBtn.addEventListener("click", () => setActiveTab("expense"));
+incomeBtn.addEventListener("click", () => setActiveTab("income"));
+allBtn.addEventListener("click", () => setActiveTab("all"));
+[expenseBtn, incomeBtn, allBtn].forEach((button) => {
+  button.addEventListener("keydown", handleTabKeyNavigation);
 });
 
 addExpense.addEventListener("click", function () {
-  addEntry("expense", expenseTitle, expenseAmount);
+  addEntry(CONFIG.entryTypes.expense, expenseTitle, expenseAmount);
 });
 
 addIncome.addEventListener("click", function () {
-  addEntry("income", incomeTitle, incomeAmount);
+  addEntry(CONFIG.entryTypes.income, incomeTitle, incomeAmount);
+});
+
+expenseAmount.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    addEntry(CONFIG.entryTypes.expense, expenseTitle, expenseAmount);
+  }
+});
+
+incomeAmount.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    addEntry(CONFIG.entryTypes.income, incomeTitle, incomeAmount);
+  }
 });
 
 incomeList.addEventListener("click", deleteOrEdit);
 expenseList.addEventListener("click", deleteOrEdit);
 allList.addEventListener("click", deleteOrEdit);
 
-// HELEPER FUNCS
+function setActiveTab(tab) {
+  const tabMap = {
+    expense: { panel: expenseEl, button: expenseBtn },
+    income: { panel: incomeEl, button: incomeBtn },
+    all: { panel: allEl, button: allBtn },
+  };
+
+  Object.values(tabMap).forEach(({ panel, button }) => {
+    hide(panel);
+    inactive(button);
+    panel.setAttribute("aria-hidden", "true");
+    button.setAttribute("aria-selected", "false");
+  });
+
+  show(tabMap[tab].panel);
+  active(tabMap[tab].button);
+  tabMap[tab].panel.setAttribute("aria-hidden", "false");
+  tabMap[tab].button.setAttribute("aria-selected", "true");
+}
+
+function handleTabKeyNavigation(event) {
+  const tabs = [expenseBtn, incomeBtn, allBtn];
+  const currentIndex = tabs.indexOf(event.currentTarget);
+  if (currentIndex === -1) return;
+
+  if (event.key === "ArrowRight") {
+    event.preventDefault();
+    tabs[(currentIndex + 1) % tabs.length].focus();
+  } else if (event.key === "ArrowLeft") {
+    event.preventDefault();
+    tabs[(currentIndex - 1 + tabs.length) % tabs.length].focus();
+  }
+}
+
 function addEntry(type, titleInput, amountInput) {
-  const validation = validateEntry(titleInput.value, amountInput.value);
+  const validation = BudgetCore.validateEntry(titleInput.value, amountInput.value, {
+    config: CONFIG,
+    messages: VALIDATION_MESSAGES,
+  });
 
   if (!validation.isValid) {
     showError(titleInput, validation.message);
@@ -80,40 +146,133 @@ function addEntry(type, titleInput, amountInput) {
   clearError(titleInput);
 
   ENTRY_LIST.push({
-    type: type,
-    title: validation.title,
-    amount: validation.amount,
+    id: BudgetCore.defaultGenerateEntryId(),
+    type,
+    title: validation.entry.title,
+    amount: validation.entry.amount,
   });
 
   updateUI();
   clearInput([titleInput, amountInput]);
 }
 
-function validateEntry(title, amount) {
-  // Validation prevents empty, unsafe, or invalid values from entering the app state.
-  const trimmedTitle = title.trim();
-  const parsedAmount = Number(amount);
+function deleteOrEdit(event) {
+  const targetBtn = event.target.closest("[data-action]");
+  if (!targetBtn) return;
 
-  if (!trimmedTitle) {
-    return { isValid: false, message: "Please enter a title." };
+  const action = targetBtn.dataset.action;
+  const entry = targetBtn.closest("[data-entry-id]");
+
+  if (!entry || !action) return;
+
+  if (action === CONFIG.actions.edit) {
+    editEntry(entry.dataset.entryId);
+  } else if (action === CONFIG.actions.delete) {
+    deleteEntry(entry.dataset.entryId);
+  }
+}
+
+function deleteEntry(entryId) {
+  ENTRY_LIST = ENTRY_LIST.filter((entry) => entry.id !== entryId);
+  updateUI();
+}
+
+function editEntry(entryId) {
+  const entry = ENTRY_LIST.find((item) => item.id === entryId);
+
+  if (!entry) return;
+
+  if (entry.type === CONFIG.entryTypes.income) {
+    incomeTitle.value = entry.title;
+    incomeAmount.value = entry.amount;
+    clearError(incomeTitle);
+    setActiveTab("income");
+  } else if (entry.type === CONFIG.entryTypes.expense) {
+    expenseTitle.value = entry.title;
+    expenseAmount.value = entry.amount;
+    clearError(expenseTitle);
+    setActiveTab("expense");
   }
 
-  if (trimmedTitle.length > MAX_TITLE_LENGTH) {
-    return {
-      isValid: false,
-      message: `Title must be ${MAX_TITLE_LENGTH} characters or fewer.`,
-    };
+  deleteEntry(entryId);
+}
+
+function updateUI() {
+  income = BudgetCore.calculateTotal(CONFIG.entryTypes.income, ENTRY_LIST);
+  outcome = BudgetCore.calculateTotal(CONFIG.entryTypes.expense, ENTRY_LIST);
+  balance = Math.abs(BudgetCore.calculateBalance(income, outcome));
+
+  const sign = income >= outcome ? CONFIG.currencySymbol : `-${CONFIG.currencySymbol}`;
+
+  balanceEl.innerHTML = `<small>${sign}</small>${balance}`;
+  outcomeTotalEl.innerHTML = `<small>${CONFIG.currencySymbol}</small>${outcome}`;
+  incomeTotalEl.innerHTML = `<small>${CONFIG.currencySymbol}</small>${income}`;
+
+  clearElement([expenseList, incomeList, allList]);
+
+  ENTRY_LIST.forEach((entry) => {
+    if (entry.type === CONFIG.entryTypes.expense) {
+      showEntry(expenseList, entry);
+    } else if (entry.type === CONFIG.entryTypes.income) {
+      showEntry(incomeList, entry);
+    }
+    showEntry(allList, entry);
+  });
+
+  if (typeof window.updateChart === "function") {
+    window.updateChart(income, outcome);
   }
 
-  if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-    return { isValid: false, message: "Please enter an amount greater than 0." };
-  }
+  saveEntries(ENTRY_LIST);
+}
 
-  return {
-    isValid: true,
-    title: trimmedTitle,
-    amount: parsedAmount,
-  };
+function showEntry(list, entry) {
+  const listItem = document.createElement("li");
+  listItem.className = entry.type;
+  listItem.dataset.entryId = entry.id;
+
+  const entryText = document.createElement("div");
+  entryText.className = "entry";
+  entryText.textContent = `${entry.title} : ${CONFIG.currencySymbol}${entry.amount}`;
+
+  const editButton = document.createElement("button");
+  editButton.type = "button";
+  editButton.dataset.action = CONFIG.actions.edit;
+  editButton.setAttribute("aria-label", "Edit entry");
+
+  const deleteButton = document.createElement("button");
+  deleteButton.type = "button";
+  deleteButton.dataset.action = CONFIG.actions.delete;
+  deleteButton.setAttribute("aria-label", "Delete entry");
+
+  listItem.appendChild(entryText);
+  listItem.appendChild(editButton);
+  listItem.appendChild(deleteButton);
+  list.prepend(listItem);
+}
+
+function loadEntries() {
+  return BudgetCore.loadEntries({
+    storage: localStorage,
+    storageKey: CONFIG.storageKey,
+    config: CONFIG,
+    createId: BudgetCore.defaultGenerateEntryId,
+    messages: VALIDATION_MESSAGES,
+    onError: (error) => {
+      console.warn("Budget App could not load saved entries.", error);
+    },
+  });
+}
+
+function saveEntries(entries) {
+  BudgetCore.saveEntries({
+    entries,
+    storage: localStorage,
+    storageKey: CONFIG.storageKey,
+    onError: (error) => {
+      console.warn("Budget App could not save entries to localStorage.", error);
+    },
+  });
 }
 
 function showError(input, message) {
@@ -136,104 +295,12 @@ function clearError(input) {
   }
 }
 
-function deleteOrEdit(event) {
-  const targetBtn = event.target;
-  const entry = targetBtn.parentNode;
-
-  if (targetBtn.id == EDIT) {
-    editEntry(entry);
-  } else if (targetBtn.id == DELETE) {
-    deleteEntry(entry);
-  }
-}
-
-function deleteEntry(entry) {
-  ENTRY_LIST.splice(entry.id, 1);
-  updateUI();
-}
-
-function editEntry(entry) {
-  const ENTRY = ENTRY_LIST[entry.id];
-
-  if (ENTRY.type == "income") {
-    incomeTitle.value = ENTRY.title;
-    incomeAmount.value = ENTRY.amount;
-    clearError(incomeTitle);
-  } else if (ENTRY.type == "expense") {
-    expenseTitle.value = ENTRY.title;
-    expenseAmount.value = ENTRY.amount;
-    clearError(expenseTitle);
-  }
-  deleteEntry(entry);
-}
-
-function updateUI() {
-  income = calculateTotal("income", ENTRY_LIST);
-  outcome = calculateTotal("expense", ENTRY_LIST);
-  balance = Math.abs(calculateBalance(income, outcome));
-
-  let sign = income >= outcome ? "$" : "-$";
-
-  //UPDATE UI
-  balanceEl.innerHTML = `<small>${sign}</small>${balance}`;
-  outcomeTotalEl.innerHTML = `<small>$</small>${outcome}`;
-  incomeTotalEl.innerHTML = `<small>$</small>${income}`;
-
-  clearElement([expenseList, incomeList, allList]);
-
-  ENTRY_LIST.forEach((entry, index) => {
-    if (entry.type == "expense") {
-      showEntry(expenseList, entry.type, entry.title, entry.amount, index);
-    } else if (entry.type == "income") {
-      showEntry(incomeList, entry.type, entry.title, entry.amount, index);
-    }
-    showEntry(allList, entry.type, entry.title, entry.amount, index);
-  });
-  updateChart(income, outcome);
-  localStorage.setItem("entry_list", JSON.stringify(ENTRY_LIST));
-}
-
-function showEntry(list, type, title, amount, id) {
-  const entry = document.createElement("li");
-  entry.id = id;
-  entry.className = type;
-
-  const entryText = document.createElement("div");
-  entryText.className = "entry";
-  // textContent shows user input as plain text, preventing HTML/script execution.
-  entryText.textContent = `${title} : $${amount}`;
-
-  const editButton = document.createElement("div");
-  editButton.id = EDIT;
-
-  const deleteButton = document.createElement("div");
-  deleteButton.id = DELETE;
-
-  entry.appendChild(entryText);
-  entry.appendChild(editButton);
-  entry.appendChild(deleteButton);
-  list.prepend(entry);
-}
-
 function clearElement(elements) {
   elements.forEach((element) => {
-    element.innerHTML = "";
+    element.textContent = "";
   });
 }
 
-function calculateTotal(type, list) {
-  let sum = 0;
-  list.forEach((entry) => {
-    if (entry.type == type) {
-      sum += entry.amount;
-    }
-  });
-  return sum;
-}
-
-function calculateBalance(income, outcome) {
-  return income - outcome;
-}
 function clearInput(inputs) {
   inputs.forEach((input) => {
     input.value = "";
@@ -244,17 +311,14 @@ function show(element) {
   element.classList.remove("hide");
 }
 
-function hide(elements) {
-  elements.forEach((element) => {
-    element.classList.add("hide");
-  });
+function hide(element) {
+  element.classList.add("hide");
 }
 
 function active(element) {
   element.classList.add("focus");
 }
-function inactive(elements) {
-  elements.forEach((element) => {
-    element.classList.remove("focus");
-  });
+
+function inactive(element) {
+  element.classList.remove("focus");
 }
