@@ -210,11 +210,11 @@ input[type="number"] {
   font-family: "Gilroy Bold";
 }
 
-.budget-dashboard #all ul.list li #edit {
+.budget-dashboard #all ul.list li [data-action="edit"] {
   visibility: hidden;
 }
 
-.budget-dashboard #all ul.list li #delete {
+.budget-dashboard #all ul.list li [data-action="delete"] {
   position: absolute;
   width: 20px;
   height: 20px;
@@ -312,7 +312,7 @@ input[type="number"] {
   color: #f0624d;
 }
 
-.budget-dashboard #expense ul.list li #edit {
+.budget-dashboard #expense ul.list li [data-action="edit"] {
   position: absolute;
   width: 20px;
   height: 20px;
@@ -323,7 +323,7 @@ input[type="number"] {
   background-repeat: no-repeat;
 }
 
-.budget-dashboard #expense ul.list li #delete {
+.budget-dashboard #expense ul.list li [data-action="delete"] {
   position: absolute;
   width: 20px;
   height: 20px;
@@ -414,7 +414,7 @@ input[type="number"] {
   font-family: "Gilroy Bold";
 }
 
-.budget-dashboard #income ul.list li #edit {
+.budget-dashboard #income ul.list li [data-action="edit"] {
   position: absolute;
   width: 20px;
   height: 20px;
@@ -425,7 +425,7 @@ input[type="number"] {
   background-repeat: no-repeat;
 }
 
-.budget-dashboard #income ul.list li #delete {
+.budget-dashboard #income ul.list li [data-action="delete"] {
   position: absolute;
   width: 20px;
   height: 20px;
