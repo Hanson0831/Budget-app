@@ -69,7 +69,6 @@ input[type="number"] {
   font-family: "Gilroy Bold";
 }
 
-<<<<<<< HEAD
 .top-actions {
   margin: 10px 20px 0 20px;
   text-align: right;
@@ -84,8 +83,6 @@ input[type="number"] {
   cursor: pointer;
 }
 
-=======
->>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
 .budget-header {
 }
 
@@ -526,7 +523,6 @@ input:focus-visible {
   outline: 2px solid #4f8cff;
   outline-offset: 2px;
 }
-<<<<<<< HEAD
 
 .cookie-banner {
   position: fixed;
@@ -558,5 +554,3 @@ input:focus-visible {
   font-size: 0.9rem;
   display: inline-block;
 }
-=======
->>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
