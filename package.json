@@ -6,12 +6,13 @@
   "scripts": {
     "test": "node tests/budget-core.test.js",
     "test:watch": "node --watch tests/budget-core.test.js",
-    "coverage": "npm run coverage:raw && npm run coverage:parse",
-    "lighthouse": "echo Run Lighthouse manually in Chrome DevTools on index.html and ensure Accessibility >= 90",
-    "coverage:raw": "node --experimental-test-coverage tests/budget-core.test.js > coverage/coverage.txt",
-    "coverage:parse": "node scripts/parse-coverage.js"
+    "coverage": "c8 --reporter=text --reporter=html --reporter=lcov node tests/budget-core.test.js",
+    "lighthouse": "echo Run Lighthouse manually in Chrome DevTools on the deployed site and ensure Accessibility >= 90"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "c8": "^10.1.3"
+  }
 }
