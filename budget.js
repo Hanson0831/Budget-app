@@ -1,12 +1,7 @@
-<<<<<<< HEAD
-﻿const CONFIG = {
+const CONFIG = {
   storageKey: "entry_list",
   consentKey: "cookie_consent",
   localeKey: "budget_locale",
-=======
-const CONFIG = {
-  storageKey: "entry_list",
->>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
   currencySymbol: "$",
   entryTypes: {
     income: "income",
@@ -36,7 +31,6 @@ const CONFIG = {
     expenseAmountInput: "expense-amount-input",
     incomeTitleInput: "income-title-input",
     incomeAmountInput: "income-amount-input",
-<<<<<<< HEAD
     i18nToggle: ".lang-toggle",
     cookieBanner: "#cookie-banner",
     acceptCookies: "#accept-cookies",
@@ -114,15 +108,6 @@ const I18N = {
       invalidAmount: "请输入大于 0 的金额。",
     },
   },
-=======
-  },
-};
-
-const VALIDATION_MESSAGES = {
-  titleRequired: "Please enter a title.",
-  titleTooLong: (max) => `Title must be ${max} characters or fewer.`,
-  invalidAmount: "Please enter an amount greater than 0.",
->>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
 };
 
 const balanceEl = document.querySelector(CONFIG.selectors.balanceValue);
@@ -146,7 +131,6 @@ const addIncome = document.querySelector(CONFIG.selectors.addIncome);
 const incomeTitle = document.getElementById(CONFIG.selectors.incomeTitleInput);
 const incomeAmount = document.getElementById(CONFIG.selectors.incomeAmountInput);
 
-<<<<<<< HEAD
 const i18nToggle = document.querySelector(CONFIG.selectors.i18nToggle);
 const cookieBanner = document.querySelector(CONFIG.selectors.cookieBanner);
 const acceptCookiesBtn = document.querySelector(CONFIG.selectors.acceptCookies);
@@ -156,18 +140,12 @@ const privacyLink = document.querySelector(CONFIG.selectors.privacyLink);
 let currentLocale = loadLocale();
 let consentState = localStorage.getItem(CONFIG.consentKey);
 let ENTRY_LIST = consentState === "accepted" ? loadEntries() : [];
-=======
-let ENTRY_LIST = loadEntries();
->>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
 let balance = 0;
 let income = 0;
 let outcome = 0;
 
-<<<<<<< HEAD
 applyLocale();
 initConsentBanner();
-=======
->>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
 setActiveTab("all");
 updateUI();
 
@@ -202,7 +180,6 @@ incomeList.addEventListener("click", deleteOrEdit);
 expenseList.addEventListener("click", deleteOrEdit);
 allList.addEventListener("click", deleteOrEdit);
 
-<<<<<<< HEAD
 i18nToggle.addEventListener("click", toggleLocale);
 acceptCookiesBtn.addEventListener("click", acceptCookies);
 declineCookiesBtn.addEventListener("click", declineCookies);
@@ -289,8 +266,6 @@ function declineCookies() {
   updateUI();
 }
 
-=======
->>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
 function setActiveTab(tab) {
   const tabMap = {
     expense: { panel: expenseEl, button: expenseBtn },
@@ -328,11 +303,7 @@ function handleTabKeyNavigation(event) {
 function addEntry(type, titleInput, amountInput) {
   const validation = BudgetCore.validateEntry(titleInput.value, amountInput.value, {
     config: CONFIG,
-<<<<<<< HEAD
     messages: getValidationMessages(),
-=======
-    messages: VALIDATION_MESSAGES,
->>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
   });
 
   if (!validation.isValid) {
@@ -342,10 +313,6 @@ function addEntry(type, titleInput, amountInput) {
 
   clearError(titleInput);
 
-<<<<<<< HEAD
-=======
-  // Stable IDs decouple stored data from the DOM order, which makes editing/deleting safer.
->>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
   ENTRY_LIST.push({
     id: BudgetCore.defaultGenerateEntryId(),
     type,
@@ -424,7 +391,6 @@ function updateUI() {
     window.updateChart(income, outcome);
   }
 
-<<<<<<< HEAD
   if (consentState === "accepted") {
     saveEntries(ENTRY_LIST);
   }
@@ -432,12 +398,6 @@ function updateUI() {
 
 function showEntry(list, entry) {
   const strings = getI18nStrings();
-=======
-  saveEntries(ENTRY_LIST);
-}
-
-function showEntry(list, entry) {
->>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
   const listItem = document.createElement("li");
   listItem.className = entry.type;
   listItem.dataset.entryId = entry.id;
@@ -449,20 +409,12 @@ function showEntry(list, entry) {
   const editButton = document.createElement("button");
   editButton.type = "button";
   editButton.dataset.action = CONFIG.actions.edit;
-<<<<<<< HEAD
   editButton.setAttribute("aria-label", strings.editEntryAria);
-=======
-  editButton.setAttribute("aria-label", "Edit entry");
->>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
 
   const deleteButton = document.createElement("button");
   deleteButton.type = "button";
   deleteButton.dataset.action = CONFIG.actions.delete;
-<<<<<<< HEAD
   deleteButton.setAttribute("aria-label", strings.deleteEntryAria);
-=======
-  deleteButton.setAttribute("aria-label", "Delete entry");
->>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
 
   listItem.appendChild(entryText);
   listItem.appendChild(editButton);
@@ -476,11 +428,7 @@ function loadEntries() {
     storageKey: CONFIG.storageKey,
     config: CONFIG,
     createId: BudgetCore.defaultGenerateEntryId,
-<<<<<<< HEAD
     messages: getValidationMessages(),
-=======
-    messages: VALIDATION_MESSAGES,
->>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
     onError: (error) => {
       console.warn("Budget App could not load saved entries.", error);
     },
@@ -488,22 +436,11 @@ function loadEntries() {
 }
 
 function saveEntries(entries) {
-<<<<<<< HEAD
   try {
     localStorage.setItem(CONFIG.storageKey, JSON.stringify(entries));
   } catch (error) {
     console.warn("Budget App could not save entries to localStorage.", error);
   }
-=======
-  BudgetCore.saveEntries({
-    entries,
-    storage: localStorage,
-    storageKey: CONFIG.storageKey,
-    onError: (error) => {
-      console.warn("Budget App could not save entries to localStorage.", error);
-    },
-  });
->>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
 }
 
 function showError(input, message) {
