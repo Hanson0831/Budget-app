@@ -1,414 +1,258 @@
-# 💰 Budget App — CPT304 Research-Led Software Enhancement
+# 💰 CPT304 Budget App Enhancement
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-brightgreen)](https://budget-app-rho-one.vercel.app/)
 [![Core Test Coverage](https://img.shields.io/badge/Core%20Test%20Coverage-86.57%25-brightgreen)](./coverage/lcov.info)
-[![Accessibility](https://img.shields.io/badge/Lighthouse%20Accessibility-100%2F100-brightgreen)](#baseline-standards-evidence)
-[![Coursework](https://img.shields.io/badge/CPT304-Coursework%201-blue)](#coursework-context)
+[![Accessibility](https://img.shields.io/badge/Lighthouse%20Accessibility-100-brightgreen)](https://budget-app-rho-one.vercel.app/)
+[![Deployment](https://img.shields.io/badge/Deployment-Vercel-black)](https://budget-app-rho-one.vercel.app/)
+[![Stack](https://img.shields.io/badge/Stack-HTML%20%7C%20CSS%20%7C%20JavaScript-blue)](#-technology-stack)
 
-## 📌 Project Overview
+## 📋 Overview
 
-This repository contains the enhanced version of a front-end **Budget App** selected for **CPT304 Software Engineering 2 Coursework 1**. The original application was a small static web app for recording income and expense entries, calculating total income, total outcome, and balance, and storing records in the browser through `localStorage`.
+This repository contains an enhanced front-end **Budget App** developed for **CPT304 Software Engineering 2 Coursework 1**. The application allows users to record income and expense entries, view financial summaries, switch between income, expense, and all-entry views, and persist budget data locally in the browser.
 
-The coursework goal was not to redesign the application from scratch, but to perform a **research-led software enhancement**. We audited the original source code, identified four concrete software deficiencies, and implemented targeted improvements in security, validation, persistence robustness, state management, maintainability, testing, accessibility, internationalisation, and privacy compliance.
+The coursework objective is not only to make the application functional, but to improve it through **research-led software enhancement**. The original project was audited to identify concrete source-code deficiencies, and the final version addresses issues related to secure input handling, local storage robustness, state management, maintainability, accessibility, internationalisation, testing coverage, and privacy transparency.
 
-🔗 **Live deployment:** https://budget-app-rho-one.vercel.app/
+🌐 **Live Deployment**: https://budget-app-rho-one.vercel.app/
 
----
+## ✨ Key Features
 
-## 🧭 Coursework Context
+### 💵 Budget Tracking
+- Add income records with a title and amount.
+- Add expense records with a title and amount.
+- View total income, total outcome, and current balance.
+- Display newly added entries at the top of each list.
+- Switch between **Expenses**, **Income**, and **All** views.
 
-This project was enhanced according to the CPT304 Coursework 1 requirements:
+### 📊 Visual Summary
+- Canvas-based budget chart showing the relationship between income and expenses.
+- Automatic chart update when entries are added, edited, or deleted.
+- Safe handling of empty-budget states to avoid invalid chart calculations.
 
-- Identify and fix **four source-code deficiencies**.
-- Support each improvement with technical reasoning and literature in the report.
-- Provide **before/after implementation evidence**.
-- Deploy the final application to a public URL.
-- Achieve **≥80% testing coverage**.
-- Achieve **Lighthouse Accessibility ≥90**.
-- Add **internationalisation support**.
-- Add **cookie/local-storage notice and privacy policy**.
-- Provide individual contribution evidence through GitHub commits and Pull Requests.
+### 💾 Local Persistence
+- Budget entries are stored through browser `localStorage` after user consent.
+- Stored entries are restored when the page is reopened.
+- Corrupted or malformed local storage data is handled safely without crashing the app.
 
----
+### 🌐 Internationalisation
+- English and Chinese interface support.
+- Language toggle for switching visible UI text.
+- Centralised interface text for easier future extension.
 
-## 🚀 Live Application
+### 🔐 Privacy & Consent
+- Cookie/local storage consent banner.
+- Users can accept or decline local storage persistence.
+- Privacy policy page explaining what data is stored and how persistence works.
+- If storage consent is declined, the app remains usable but entries are not persisted after refresh.
 
-The final version is deployed on Vercel:
+### ♿ Accessibility
+- Semantic buttons for key interactions.
+- Accessible labels for form inputs and action buttons.
+- ARIA roles and selected states for tab-style navigation.
+- Accessible description for the chart area.
+- Lighthouse Accessibility score: **100**, exceeding the required 90+ threshold.
 
-```text
-https://budget-app-rho-one.vercel.app/
-```
+## 🧩 Coursework Deficiency Fixes
 
-The deployed app supports:
+The project focuses on four source-code deficiencies identified during code review.
 
-- Adding income records.
-- Adding expense records.
-- Editing and deleting records.
-- Viewing income-only, expense-only, and all entries.
-- Automatic balance calculation.
-- Local persistence after user consent.
-- English / Chinese language switching.
-- Privacy policy access.
-- Accessible form controls and semantic buttons.
+### 1. 🛡️ Unsafe User Input Handling: Weak Validation and XSS Risk
 
----
+**Original issue**: The original application only checked whether income or expense fields were empty. It also rendered user-provided titles using HTML string insertion, which created a potential Cross-Site Scripting risk.
 
-## 🧩 Key Enhancements
+**Enhancement**:
+- Added reusable entry validation logic.
+- Rejected empty titles, whitespace-only titles, overly long titles, non-finite values, zero, and negative amounts.
+- Replaced silent validation failure with user-facing error messages.
+- Replaced unsafe HTML insertion with safe DOM creation and `textContent`.
+- User input such as `<script>alert(1)</script>` is displayed as plain text rather than interpreted as executable HTML.
 
-### 1. 🛡️ Unsafe User Input Handling: Validation and XSS Prevention
+### 2. 💾 Unsafe LocalStorage Persistence Without Error Recovery
 
-**Original deficiency:**  
-The original app only checked whether the title and amount fields were empty. It did not reject whitespace-only titles, overly long titles, non-finite numbers, zero values, or negative values. It also rendered user-controlled titles through HTML string insertion, which created a potential XSS risk.
+**Original issue**: The original code directly parsed localStorage data using `JSON.parse()`. If the stored value was corrupted, the page could fail during initialisation.
 
-**Implemented enhancement:**
-
-- Added reusable validation logic for income and expense entries.
-- Trimmed user-provided titles before saving.
-- Rejected empty, whitespace-only, and overly long titles.
-- Rejected `NaN`, `Infinity`, zero, and negative amounts.
-- Added user-facing error messages instead of silent failure.
-- Replaced unsafe HTML string rendering with `document.createElement()` and `textContent`.
-- Ensured HTML-like input such as `<script>alert(1)</script>` is displayed as plain text rather than executable markup.
-
-**Main files involved:**
-
-```text
-budget.js
-budget-core.js
-style.css
-```
-
----
-
-### 2. 💾 Unsafe localStorage Persistence Without Error Recovery
-
-**Original deficiency:**  
-The original app directly parsed stored data with `JSON.parse(localStorage.getItem(...))`. If the stored value was corrupted or malformed, the application could crash during initialization.
-
-**Implemented enhancement:**
-
-- Added safe storage loading and saving logic.
-- Wrapped JSON parsing in recovery logic.
-- Returned fallback data if localStorage was empty, malformed, or unavailable.
-- Normalised stored entries before loading them into the app state.
-- Filtered invalid entries rather than allowing malformed data to break the UI.
-- Preserved app availability even when stored data is manually corrupted.
-
-**Main files involved:**
-
-```text
-budget-core.js
-budget.js
-```
-
----
+**Enhancement**:
+- Added safe local storage loading and saving helpers.
+- Wrapped parsing logic with error handling.
+- Returned fallback data when storage was missing, invalid, or corrupted.
+- Normalised stored entries before using them in the app state.
+- Prevented corrupted browser data from breaking the application.
 
 ### 3. 🔗 State Management Coupled to DOM Indexes
 
-**Original deficiency:**  
-The original delete and edit logic used DOM element `id` values as array indexes. This tightly coupled the UI rendering order to the underlying data model and could become fragile if sorting, filtering, or future rendering changes were introduced.
+**Original issue**: Delete and edit logic depended on DOM element IDs as array indexes. This tightly coupled the UI structure to the data model and made the logic fragile under future sorting, filtering, or rendering changes.
 
-**Implemented enhancement:**
-
-- Added stable entry identifiers.
-- Stored entry IDs inside the data model.
-- Rendered list items using `data-entry-id` instead of relying on DOM index values.
-- Refactored delete and edit logic to find records by stable ID.
-- Added migration support for older stored entries that did not already contain IDs.
-- Improved data/UI separation and future maintainability.
-
-**Main files involved:**
-
-```text
-budget.js
-budget-core.js
-```
-
----
+**Enhancement**:
+- Added stable IDs to entry objects.
+- Rendered list items using `data-entry-id` rather than array-index-based HTML IDs.
+- Refactored delete logic to remove entries by stable ID.
+- Refactored edit logic to locate entries by stable ID.
+- Migrated older entries without IDs during storage normalisation.
 
 ### 4. 🧱 Hardcoded Configuration and Scattered Constants
 
-**Original deficiency:**  
-The original code scattered values such as storage keys, action names, entry types, validation limits, selectors, and currency symbols directly across the implementation. This increased maintenance cost and made later extension harder.
+**Original issue**: Important values such as storage keys, entry types, action names, selectors, currency symbols, and validation limits were scattered across the codebase.
 
-**Implemented enhancement:**
+**Enhancement**:
+- Added a central configuration object.
+- Grouped storage key, currency symbol, entry types, actions, selectors, and validation limits.
+- Reduced repeated string literals.
+- Improved maintainability and prepared the app for later extension, including internationalisation and testing.
 
-- Introduced a central configuration structure.
-- Consolidated storage keys, entry types, action names, selectors, validation limits, and currency display logic.
-- Reduced repeated literal strings across the codebase.
-- Improved readability, maintainability, and future extensibility.
-- Supported later baseline features such as language switching and privacy notice integration.
+## 🛠️ Technology Stack
 
-**Main files involved:**
+- **Frontend**: HTML5, CSS3, Vanilla JavaScript
+- **Persistence**: Browser `localStorage`
+- **Testing**: Node.js test runner
+- **Coverage**: c8 / Istanbul-style LCOV report
+- **Deployment**: Vercel
+- **Audit Tool**: Google Lighthouse / PageSpeed Insights
 
-```text
-budget.js
-budget-core.js
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+ recommended
+- npm
+- Modern web browser such as Chrome, Edge, or Firefox
+
+### Installation
+
+```bash
+git clone <this-repository-url>
+cd Budget-app
+npm install
 ```
 
----
+### Running the App Locally
 
-## 🌍 Baseline Standards Evidence
+The application is a static front-end app. It can be opened directly in a browser:
 
-The final version also addresses the required baseline standards.
+```bash
+open index.html
+```
 
-### ✅ Deployment on Vercel
+On Windows, double-clicking `index.html` also opens the application in the default browser.
 
-The app is publicly deployed and accessible at:
+For the deployed version, visit:
 
 ```text
 https://budget-app-rho-one.vercel.app/
 ```
 
-Deployment evidence and uptime screenshots are included separately in the repository/report evidence.
+## 🧪 Testing & Coverage
 
----
+The project includes automated tests for the extracted core logic layer, including validation, calculation, storage recovery, and entry normalisation.
 
-### ✅ Testing Coverage Above 80%
-
-Automated tests were added for the extracted core logic layer, including validation, calculation, entry normalisation, localStorage recovery, and stable ID migration.
-
-The project uses `c8` to generate an Istanbul-style LCOV coverage report.
-
-Current coverage evidence:
-
-```text
-Core Test Coverage: 86.57%
-Required Threshold: 80%
-Status: Passed
-```
-
-Run locally:
+### Run Tests
 
 ```bash
-npm install
 npm test
+```
+
+### Run Coverage
+
+```bash
 npm run coverage
 ```
 
-Coverage evidence is available in:
+The final c8 / Istanbul-style core logic coverage result is:
 
 ```text
-coverage/lcov.info
+Line coverage: 86.57%
 ```
 
-> Note: The automated coverage focuses on the extracted core business logic in `budget-core.js`. Browser-level UI behaviour is verified separately through manual testing and Lighthouse accessibility checks.
+This exceeds the coursework requirement of **80%+ test coverage**.
 
----
+> Note: Automated unit tests focus on the extracted `budget-core.js` logic. Browser-facing behaviours such as rendering, tab switching, consent interaction, language switching, and accessibility were verified through manual testing and Lighthouse/PageSpeed auditing.
 
-### ✅ Lighthouse Accessibility 90+
+## ♿ Accessibility Evidence
 
-The deployed website was audited using Lighthouse / PageSpeed Insights.
-
-Current accessibility result:
+The deployed application was audited using Google PageSpeed Insights / Lighthouse. The final Accessibility score is:
 
 ```text
-Accessibility Score: 100 / 100
-Required Score: 90+
-Status: Passed
+Accessibility: 100
 ```
+
+This exceeds the required **90+ Lighthouse Accessibility score**.
 
 Accessibility improvements include:
+- Semantic interactive elements.
+- Accessible labels for controls.
+- Improved form labelling.
+- ARIA-supported tab navigation.
+- Accessible chart description.
+- Keyboard-friendly interaction structure.
 
-- Semantic buttons for interactive controls.
-- Accessible labels for form inputs and action buttons.
-- ARIA-aware tab navigation.
-- Accessible description for the chart area.
-- Clear text feedback for validation errors.
-- Improved keyboard and screen-reader support.
+## 🌍 Deployment
 
----
-
-### ✅ Internationalisation
-
-The final app supports language switching between:
+The final application is deployed using Vercel:
 
 ```text
-English
-Chinese
+https://budget-app-rho-one.vercel.app/
 ```
 
-The language toggle improves usability for a wider user group and supports the coursework baseline requirement for internationalisation.
-
----
-
-### ✅ Cookie / Local Storage Notice and Privacy Policy
-
-The app includes a local-storage consent notice and a privacy policy page. Since the app stores income and expense records in the browser, the user is informed about local persistence behaviour.
-
-The privacy implementation explains:
-
-- What data is stored locally.
-- Why localStorage is used.
-- What happens if storage consent is declined.
-- That the static app does not upload budget records to a remote server.
-
-Privacy page:
-
-```text
-privacy.html
-```
-
----
-
-## 🧪 Testing
-
-The test suite focuses on the extracted core logic to make the most important business rules independently testable.
-
-Covered areas include:
-
-- Valid income/expense entry validation.
-- Empty and whitespace-only title rejection.
-- Long title rejection.
-- Invalid amount rejection.
-- Positive amount acceptance.
-- Total income/outcome calculation.
-- Balance calculation.
-- Corrupted localStorage recovery.
-- Entry normalisation.
-- Stable ID migration for old records.
-
-Run tests:
-
-```bash
-npm test
-```
-
-Run coverage:
-
-```bash
-npm run coverage
-```
-
----
-
-## 🛠️ Technology Stack
-
-```text
-HTML5
-CSS3
-Vanilla JavaScript
-localStorage
-Node.js test runner
-c8 coverage tool
-Vercel deployment
-Lighthouse / PageSpeed Insights
-```
-
-No heavy front-end framework was introduced, keeping the implementation close to the original app while improving its software engineering quality.
-
----
+The deployment provides a public production URL for coursework evaluation and supports the required live-site evidence. The project is designed as a static web application, so no backend server or database configuration is required.
 
 ## 📁 Project Structure
 
 ```text
-Budget App/
+Budget-app/
 ├── coverage/
-│   └── lcov.info
-├── font/
-├── icon/
+│   └── lcov.info                 # c8 / Istanbul-style coverage data
+├── font/                         # Local font assets
+├── icon/                         # UI icons
 ├── tests/
-│   └── budget-core.test.js
-├── budget-core.js
-├── budget.js
-├── chart.js
-├── index.html
-├── privacy.html
-├── style.css
-├── package.json
-├── package-lock.json
-├── README.md
-├── LIGHTHOUSE.md
-└── TESTING.md
+│   └── budget-core.test.js       # Core logic tests
+├── budget-core.js                # Extracted testable core logic
+├── budget.js                     # Main UI interaction and app state logic
+├── chart.js                      # Canvas chart rendering
+├── index.html                    # Main application page
+├── privacy.html                  # Privacy policy page
+├── style.css                     # Application styling
+├── package.json                  # npm scripts and project metadata
+├── package-lock.json             # Locked npm dependency versions
+├── README.md                     # Project documentation
+├── LIGHTHOUSE.md                 # Accessibility audit notes/evidence summary
+└── TESTING.md                    # Testing and coverage notes/evidence summary
 ```
 
----
+## ✅ Manual Quality Checks
 
-## ▶️ How to Run Locally
+The following behaviours were checked manually as part of final verification:
 
-Clone the repository and open the project folder:
+- Adding valid income entries.
+- Adding valid expense entries.
+- Rejecting empty titles.
+- Rejecting whitespace-only titles.
+- Rejecting negative, zero, `NaN`, and infinite amounts.
+- Displaying HTML-like user input as plain text.
+- Editing income and expense entries.
+- Deleting entries using stable IDs.
+- Refreshing the page after accepting storage consent.
+- Declining storage consent and confirming non-persistent behaviour.
+- Switching between English and Chinese UI text.
+- Accessing the privacy policy page.
+- Running Lighthouse Accessibility audit on the deployed site.
 
-```bash
-npm install
-npm test
-npm run coverage
-```
+## 🤝 Contribution Workflow
 
-To view the app locally, open:
+The project was organised using GitHub branches and Pull Requests. Each major enhancement was separated into a verifiable task area:
 
-```text
-index.html
-```
+- Input validation and XSS prevention.
+- LocalStorage recovery and stable state handling.
+- Configuration refactoring and core logic extraction.
+- Baseline compliance features, including i18n, privacy, accessibility, deployment, and testing evidence.
 
-or use a local static server if preferred.
+This workflow supports individual contribution verification through authored Pull Requests, task descriptions, and commit history.
 
----
+## 📄 Academic Context
 
-## 🔍 Manual Test Checklist
+This repository is prepared for **CPT304 Software Engineering 2 Coursework 1**. The final implementation demonstrates research-led improvement of an existing web application through concrete source-code deficiency detection, targeted implementation, testing, deployment, accessibility auditing, and compliance-related enhancements.
 
-Recommended final manual checks:
+## 🙏 Acknowledgements
 
-- Add valid income, such as `Salary`, `1000`.
-- Add valid expense, such as `Food`, `20`.
-- Reject empty title.
-- Reject whitespace-only title.
-- Reject negative amount.
-- Reject zero amount.
-- Reject non-numeric amount.
-- Render `<script>alert(1)</script>` as plain text.
-- Delete an entry after several entries have been added.
-- Edit both income and expense entries.
-- Refresh the page and confirm persistence after consent.
-- Decline localStorage consent and confirm entries are not persisted after refresh.
-- Switch between English and Chinese.
-- Open the privacy policy page.
-- Run Lighthouse and confirm Accessibility score remains above 90.
-
----
-
-## 👥 Contribution and Pull Requests
-
-This project was developed collaboratively. Each group member contributed through task-specific branches and Pull Requests. The coursework submission includes individual contribution evidence, including direct PR links, commit history, and task descriptions.
-
-Suggested contribution mapping:
-
-```text
-PR 1: Validation and XSS prevention
-PR 2: localStorage recovery and stable ID state management
-PR 3: configuration refactor and core logic tests
-PR 4: baseline compliance, accessibility, privacy, i18n, coverage, and deployment evidence
-```
-
-Detailed individual contribution evidence is provided in the coursework submission package.
-
----
-
-## 📄 Coursework Evidence Summary
-
-Evidence prepared for the final report includes:
-
-- Before/after code snippets for four deficiencies.
-- Vercel live deployment URL.
-- Deployment stability screenshots.
-- Core test coverage badge and coverage output.
-- Lighthouse Accessibility result showing 100 / 100.
-- i18n toggle screenshots.
-- Cookie/local-storage notice screenshots.
-- Privacy policy screenshot.
-- Individual contribution form and PR links.
-
----
-
-## ✅ Final Status
-
-```text
-Deployment: Completed
-Core Test Coverage: 86.57% Passed
-Accessibility: 100 / 100 Passed
-Internationalisation: Completed
-Cookie / Local Storage Notice: Completed
-Privacy Policy: Completed
-Four Deficiency Fixes: Completed
-```
-
-This final version demonstrates a focused software engineering improvement process: identifying concrete source-code deficiencies, applying targeted fixes, preserving the original app behaviour, and producing verifiable evidence for deployment, testing, accessibility, internationalisation, and privacy compliance.
+- Original Budget App project basis.
+- Node.js test runner.
+- c8 coverage tooling.
+- Google Lighthouse / PageSpeed Insights.
+- Vercel deployment platform.
+- shields.io badge generation.
