@@ -1,6 +1,6 @@
 # Budget App (JavaScript)
 
-[![Istanbul Coverage](https://img.shields.io/badge/Istanbul%20Coverage-91.34%25-brightgreen)](./coverage/coverage.txt)
+[![Istanbul Coverage](https://img.shields.io/badge/Istanbul%20Coverage-86.57%25-brightgreen)](./coverage/index.html)
 
 A lightweight budget tracker with:
 
