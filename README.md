@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-﻿# Budget App (JavaScript)
+# Budget App (JavaScript)
 
 [![Istanbul Coverage](https://img.shields.io/badge/Istanbul%20Coverage-91.34%25-brightgreen)](./coverage/coverage.txt)
 
@@ -47,27 +46,3 @@ npm run lighthouse
 ## Manual validation
 
 See `TESTING.md`.
-=======
-# Budget App V3
-
-Intermediate coursework version for:
-
-- centralized configuration
-- extracted reusable core logic
-- validation and safer rendering
-- safe localStorage recovery
-- stable entry IDs for edit/delete
-- unit tests for core behavior
-
-## Run Tests
-
-```bash
-npm test
-```
-
-Optional local coverage:
-
-```bash
-npm run coverage
-```
->>>>>>> 67573192f670bc4eab1d90635a6dabb0b7668284
